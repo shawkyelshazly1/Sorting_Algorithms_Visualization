@@ -17,10 +17,10 @@ class Algorithm_Visualizer():
         self.colors = []
         self.font_colors = []
         self.set_size = tkinter.IntVar(value=10)
-        self.max_range = 450
+        self.max_range = 470
         self.create_widgets()
         self.create_canvas()
-        self.visual_speed = tkinter.DoubleVar(value=0.35)
+        self.visual_speed = tkinter.DoubleVar(value=0.2)
 
     def create_widgets(self):
         self.set_size_scaler = tkinter.Scale(
@@ -35,12 +35,17 @@ class Algorithm_Visualizer():
         self.bubble_sort_btn = tkinter.Button(
             self.control_frame, text='Bubble Sort', command=self.bubble_sort)
         self.bubble_sort_btn.pack(side=LEFT, pady=0)
+
         self.selection_sort_btn = tkinter.Button(
             self.control_frame, text='Selection Sort', command=self.selection_sort)
         self.selection_sort_btn.pack(side=LEFT, pady=0)
 
+        self.merge_sort_btn = tkinter.Button(
+            self.control_frame, text='Merge Sort', command=lambda: self.mergeSort(self.random_set, 0, self.set_size.get()-1))
+        self.merge_sort_btn.pack(side=LEFT, pady=0)
+
     def create_canvas(self):
-        self.canvas = Canvas(self.visual_frame, width=700)
+        self.canvas = Canvas(self.visual_frame, width=700, height=500)
         self.canvas.pack(padx=10)
 
     def draw_columns(self):
@@ -130,39 +135,90 @@ class Algorithm_Visualizer():
 
         self.disable_controls()
 
+    def merge(self, arr, start, mid, end):
 
-    def merge_sort(self):
-        
+        start2 = mid + 1
 
+        # If the direct merge is already sorted
+        if (arr[mid] <= arr[start2]):
+            return
 
-    def bubble_color_rect(self, tag1, tag2):
-        self.canvas.itemconfig('rect%s' % str(tag1), fill='red')
-        self.canvas.itemconfig('rect%s' % str(tag2), fill='blue')
+        # Two pointers to maintain start
+        # of both arrays to merge
+        while (start <= mid and start2 <= end):
 
-    def switch_columns_location(self, tag1, tag2):
-        self.canvas.move('rect%s' % str(tag1), -self.column_width, 0)
-        self.canvas.move('rect%s' % str(tag2), self.column_width, 0)
+            # If element 1 is in right place
+            if (arr[start] <= arr[start2]):
+                self.colors[start] = 'red'
+                self.colors[start2] = 'blue'
+                self.draw_columns()
+                time.sleep(self.visual_speed.get())
+                self.colors[start] = 'yellow'
+                self.colors[start2] = 'yellow'
+                start += 1
+                self.draw_columns()
+                time.sleep(self.visual_speed.get())
+            else:
+                value = arr[start2]
+                index = start2
 
-    def bubble_reset_color(self, tag1, tag2):
-        self.canvas.itemconfig('rect%s' % str(tag1), fill='yellow')
-        self.canvas.itemconfig('rect%s' % str(tag2), fill='yellow')
+                # Shift all the elements between element 1
+                # element 2, right by 1.
+                while (index != start):
+                    self.draw_columns()
+                    time.sleep(self.visual_speed.get())
+                    self.colors[index] = 'red'
+                    self.colors[index-1] = 'blue'
+                    arr[index] = arr[index - 1]
+                    self.draw_columns()
+                    time.sleep(self.visual_speed.get())
+                    self.colors[index] = 'yellow'
+                    self.colors[index-1] = 'yellow'
+                    index -= 1
+
+                arr[start] = value
+                self.draw_columns()
+                time.sleep(self.visual_speed.get())
+                # Update all the pointers
+                start += 1
+                mid += 1
+                start2 += 1
+
+    def mergeSort(self, arr, l, r):
+        self.disable_controls()
+        if (l < r):
+
+            # Same as (l + r) / 2, but avoids overflow
+            # for large l and r
+            m = l + (r - l) // 2
+
+            # Sort first and second halves
+            self.mergeSort(arr, l, m)
+            self.mergeSort(arr, m + 1, r)
+            self.draw_columns()
+            time.sleep(self.visual_speed.get())
+            self.merge(arr, l, m, r)
+        self.disable_controls()
 
     def disable_controls(self):
         if self.set_size_scaler['state'] == 'normal' and self.random_btn['state'] == 'normal' and self.bubble_sort_btn['state'] == 'normal':
             self.set_size_scaler['state'] = 'disabled'
             self.random_btn['state'] = 'disabled'
             self.bubble_sort_btn['state'] = 'disabled'
+            self.selection_sort_btn['state'] = 'disabled'
+            self.merge_sort_btn['state'] = 'disabled'
         else:
             self.set_size_scaler['state'] = 'normal'
             self.random_btn['state'] = 'normal'
             self.bubble_sort_btn['state'] = 'normal'
+            self.selection_sort_btn['state'] = 'normal'
+            self.merge_sort_btn['state'] = 'normal'
 
 
 root = Tk()
 root.title('Sorting Algorithms Visualizer')
 root.geometry('700x500')
 root.iconbitmap('./python_103279.ico')
-
 
 visualizer = Algorithm_Visualizer(root)
 root.mainloop()
